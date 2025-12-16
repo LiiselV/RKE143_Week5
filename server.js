@@ -1,7 +1,8 @@
 const http = require('http');
 const url = require('url');
 const fs = require('fs');
-const port = 3000;
+
+const port = process.env.PORT || 3000;
 
 const server = http.createServer((request, response) => {
     const requestUrl = url.parse(request.url).pathname;
@@ -19,20 +20,42 @@ const server = http.createServer((request, response) => {
             }
             response.end();
         });
-        return; // ÄRA lase ülejäänud koodi käima!
+        return;
     }
 
-    // --- TEISED LEHED ---
-    response.writeHead(200, { 'Content-Type': 'text/plain' });
-
+    // --- ABOUT --- serveeri about.html
     if (requestUrl === '/about') {
-        response.write('Hello from /about');
-    } else if (requestUrl === '/contact') {
-        response.write('Hello from /contact');
-    } else {
-        response.write(`${requestUrl} path not found.`);
+        fs.readFile('about.html', (error, fileContent) => {
+            if (error) {
+                response.writeHead(404, { 'Content-Type': 'text/plain' });
+                response.write('Error. File not found.');
+            } else {
+                response.writeHead(200, { 'Content-Type': 'text/html' });
+                response.write(fileContent);
+            }
+            response.end();
+        });
+        return;
     }
 
+    // --- CONTACT --- serveeri contact.html
+    if (requestUrl === '/contact') {
+        fs.readFile('contact.html', (error, fileContent) => {
+            if (error) {
+                response.writeHead(404, { 'Content-Type': 'text/plain' });
+                response.write('Error. File not found.');
+            } else {
+                response.writeHead(200, { 'Content-Type': 'text/html' });
+                response.write(fileContent);
+            }
+            response.end();
+        });
+        return;
+    }
+
+    // --- NOT FOUND ---
+    response.writeHead(404, { 'Content-Type': 'text/plain' });
+    response.write(`${requestUrl} path not found.`);
     response.end();
 });
 
